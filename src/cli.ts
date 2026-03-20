@@ -9,6 +9,7 @@ import { searchCommand } from "./commands/search.js";
 import { linksCommand } from "./commands/links.js";
 import { archiveCommand } from "./commands/archive.js";
 import { serveCommand } from "./commands/serve.js";
+import { syncCommand } from "./commands/sync.js";
 
 function getStore(): CardStore {
   const home = process.env.MEMEX_HOME || join(homedir(), ".memex");
@@ -93,6 +94,32 @@ program
   .action(async (opts: { port: string }) => {
     await serveCommand(parseInt(opts.port));
   });
+
+program
+  .command("sync")
+  .description("Sync cards across devices via git")
+  .option("--init", "Initialize sync")
+  .option("--auto <mode>", "Set auto sync: on|off")
+  .option("--status", "Show sync status")
+  .argument("[remote]", "Remote repo URL (for --init)")
+  .action(
+    async (
+      remote: string | undefined,
+      opts: { init?: boolean; auto?: string; status?: boolean }
+    ) => {
+      const home = process.env.MEMEX_HOME || join(homedir(), ".memex");
+      const result = await syncCommand(home, {
+        ...opts,
+        remote,
+        init: opts.init || !!remote,
+      });
+      if (result.output) process.stdout.write(result.output + "\n");
+      if (result.error) {
+        process.stderr.write(result.error + "\n");
+        process.exit(1);
+      }
+    }
+  );
 
 program
   .command("mcp")
