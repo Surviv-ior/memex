@@ -1,5 +1,5 @@
-import { readdir, readFile, writeFile, rename, mkdir } from "node:fs/promises";
-import { join, basename, dirname } from "node:path";
+import { readdir, readFile, writeFile, rename, mkdir, realpath } from "node:fs/promises";
+import { join, basename, dirname, resolve } from "node:path";
 
 interface ScannedCard {
   slug: string;
@@ -50,9 +50,18 @@ export class CardStore {
     return readFile(path, "utf-8");
   }
 
+  private assertSafePath(targetPath: string): void {
+    const resolved = resolve(targetPath);
+    const cardsResolved = resolve(this.cardsDir);
+    if (!resolved.startsWith(cardsResolved + "/") && resolved !== cardsResolved) {
+      throw new Error(`Invalid slug: path escapes cards directory`);
+    }
+  }
+
   async writeCard(slug: string, content: string): Promise<void> {
     const existing = await this.resolve(slug);
     const targetPath = existing ?? join(this.cardsDir, `${slug}.md`);
+    this.assertSafePath(targetPath);
     await mkdir(dirname(targetPath), { recursive: true });
     await writeFile(targetPath, content, "utf-8");
   }

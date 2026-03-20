@@ -6,12 +6,18 @@ import { writeCommand } from "../commands/write.js";
 import { linksCommand } from "../commands/links.js";
 import { archiveCommand } from "../commands/archive.js";
 import { syncCommand } from "../commands/sync.js";
+import { readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { z } from "zod";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const pkg = JSON.parse(readFileSync(join(__dirname, "..", "..", "package.json"), "utf-8"));
 
 export function createMemexServer(store: CardStore, home?: string): McpServer {
   const server = new McpServer({
     name: "memex",
-    version: "0.1.2",
+    version: pkg.version,
   });
 
   server.registerTool("memex_search", {

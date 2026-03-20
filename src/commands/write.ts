@@ -1,8 +1,7 @@
-import { parseFrontmatter } from "../lib/parser.js";
+import { parseFrontmatter, stringifyFrontmatter } from "../lib/parser.js";
 import { CardStore } from "../lib/store.js";
 import { autoSync } from "../lib/sync.js";
 import { dirname } from "node:path";
-import matter from "gray-matter";
 
 const REQUIRED_FIELDS = ["title", "created", "source"];
 
@@ -26,7 +25,7 @@ export async function writeCommand(store: CardStore, slug: string, input: string
     data.created = data.created.toISOString().split("T")[0];
   }
 
-  const output = matter.stringify(content, data);
+  const output = stringifyFrontmatter(content, data);
   await store.writeCard(slug, output);
   await autoSync(dirname(store.cardsDir));
   return { success: true };

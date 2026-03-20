@@ -40,11 +40,10 @@ export async function searchCommand(store: CardStore, query: string | undefined,
     const regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
     const matches = content.match(regex);
     if (matches && matches.length > 0) {
-      // Find first matching line in body
+      // Find first matching line in body (use non-global regex to avoid lastIndex drift)
+      const lineRegex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
       const bodyLines = content.split("\n");
-      const matchLine = bodyLines.find((l) => regex.test(l))?.trim() || "";
-      // Reset regex lastIndex
-      regex.lastIndex = 0;
+      const matchLine = bodyLines.find((l) => lineRegex.test(l))?.trim() || "";
       matchedCards.push({ slug: card.slug, matchLine, matchCount: matches.length });
     }
   }

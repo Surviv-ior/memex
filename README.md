@@ -111,7 +111,9 @@ Opens a visual timeline of all your cards at `localhost:3939`.
 
 ```bash
 memex sync --init git@github.com:you/memex-cards.git
-memex sync --auto on
+memex sync on      # enable auto-sync after every write
+memex sync         # manual sync
+memex sync off     # disable auto-sync
 ```
 
 Cards are plain markdown — git handles merging and history.

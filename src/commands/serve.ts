@@ -4,7 +4,7 @@ import { homedir } from "node:os";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
-import { exec } from "node:child_process";
+import { execFile } from "node:child_process";
 import { CardStore } from "../lib/store.js";
 import { parseFrontmatter, extractLinks } from "../lib/parser.js";
 
@@ -161,10 +161,10 @@ export async function serveCommand(port: number): Promise<void> {
       const url = `http://localhost:${currentPort}`;
       console.log(`memex is running at ${url}`);
       if (!process.env.MEMEX_NO_OPEN) {
-        const cmd = process.platform === "darwin" ? `open ${url}`
-          : process.platform === "win32" ? `start ${url}`
-          : `xdg-open ${url}`;
-        exec(cmd);
+        const bin = process.platform === "darwin" ? "open"
+          : process.platform === "win32" ? "start"
+          : "xdg-open";
+        execFile(bin, [url], () => {});
       }
     });
   };

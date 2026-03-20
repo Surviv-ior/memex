@@ -10,6 +10,13 @@ export function parseFrontmatter(raw: string): ParsedCard {
   return { data, content };
 }
 
+export function stringifyFrontmatter(
+  content: string,
+  data: Record<string, unknown>
+): string {
+  return matter.stringify(content, data);
+}
+
 export function extractLinks(body: string): string[] {
   const re = /\[\[([^\]]+)\]\]/g;
   const links = new Set<string>();

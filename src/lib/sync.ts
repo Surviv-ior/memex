@@ -115,15 +115,19 @@ export class GitAdapter implements SyncAdapter {
     // Set remote
     try {
       await execFile("git", ["-C", this.home, "remote", "add", "origin", url]);
-    } catch {
-      await execFile("git", [
-        "-C",
-        this.home,
-        "remote",
-        "set-url",
-        "origin",
-        url,
-      ]);
+    } catch (err) {
+      if ((err as Error).message?.includes("already exists")) {
+        await execFile("git", [
+          "-C",
+          this.home,
+          "remote",
+          "set-url",
+          "origin",
+          url,
+        ]);
+      } else {
+        throw err;
+      }
     }
 
     // Initial commit and push
@@ -198,7 +202,14 @@ export class GitAdapter implements SyncAdapter {
     }
 
     // Push
-    await execFile("git", ["-C", this.home, "push", "origin", "HEAD"]);
+    try {
+      await execFile("git", ["-C", this.home, "push", "origin", "HEAD"]);
+    } catch (err) {
+      return {
+        success: false,
+        message: `Push failed: ${(err as Error).message}`,
+      };
+    }
 
     config.lastSync = new Date().toISOString();
     await writeSyncConfig(this.home, config);
