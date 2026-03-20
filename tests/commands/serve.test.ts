@@ -20,6 +20,7 @@ describe("serve API", () => {
   let tmpDir: string;
   let port: number;
   let baseUrl: string;
+  let server: http.Server;
 
   beforeAll(async () => {
     tmpDir = await mkdtemp(join(tmpdir(), "memex-serve-test-"));
@@ -41,13 +42,11 @@ describe("serve API", () => {
     port = 10000 + Math.floor(Math.random() * 50000);
     baseUrl = `http://localhost:${port}`;
 
-    serveCommand(port);
-
-    // Wait for server to start
-    await new Promise<void>((resolve) => setTimeout(resolve, 300));
+    server = await serveCommand(port);
   }, 10000);
 
   afterAll(async () => {
+    server?.close();
     delete process.env.MEMEX_HOME;
     delete process.env.MEMEX_NO_OPEN;
     await rm(tmpDir, { recursive: true, force: true });

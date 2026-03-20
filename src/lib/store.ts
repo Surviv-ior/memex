@@ -1,4 +1,4 @@
-import { readdir, readFile, writeFile, rename, mkdir, realpath } from "node:fs/promises";
+import { readdir, readFile, writeFile, rename, mkdir } from "node:fs/promises";
 import { join, basename, dirname, resolve } from "node:path";
 
 interface ScannedCard {
@@ -7,14 +7,23 @@ interface ScannedCard {
 }
 
 export class CardStore {
+  private scanCache: ScannedCard[] | null = null;
+
   constructor(
     public readonly cardsDir: string,
     private archiveDir: string
   ) {}
 
+  /** Invalidate scan cache after writes/deletes */
+  invalidateCache(): void {
+    this.scanCache = null;
+  }
+
   async scanAll(): Promise<ScannedCard[]> {
+    if (this.scanCache) return this.scanCache;
     const results: ScannedCard[] = [];
     await this.walkDir(this.cardsDir, results);
+    this.scanCache = results;
     return results;
   }
 
@@ -64,6 +73,7 @@ export class CardStore {
     this.assertSafePath(targetPath);
     await mkdir(dirname(targetPath), { recursive: true });
     await writeFile(targetPath, content, "utf-8");
+    this.invalidateCache();
   }
 
   async archiveCard(slug: string): Promise<void> {
@@ -80,5 +90,6 @@ export class CardStore {
     await mkdir(this.archiveDir, { recursive: true });
     const dest = join(this.archiveDir, `${slug}.md`);
     await rename(path, dest);
+    this.invalidateCache();
   }
 }

@@ -1,4 +1,4 @@
-import { createServer } from "node:http";
+import { createServer, type Server } from "node:http";
 import { join } from "node:path";
 import { homedir } from "node:os";
 import { readFile } from "node:fs/promises";
@@ -20,7 +20,7 @@ async function getHTML(): Promise<string> {
   return cachedHTML;
 }
 
-export async function serveCommand(port: number): Promise<void> {
+export async function serveCommand(port: number): Promise<Server> {
   const home = process.env.MEMEX_HOME || join(homedir(), ".memex");
   const store = new CardStore(join(home, "cards"), join(home, "archive"));
 
@@ -144,30 +144,33 @@ export async function serveCommand(port: number): Promise<void> {
     }
   });
 
-  const maxRetries = 10;
+  return new Promise<Server>((resolvePromise, rejectPromise) => {
+    const maxRetries = 10;
 
-  const tryListen = (currentPort: number, attempt: number): void => {
-    server.once("error", (err: NodeJS.ErrnoException) => {
-      if (err.code === "EADDRINUSE" && attempt < maxRetries) {
-        console.log(`Port ${currentPort} in use, trying ${currentPort + 1}...`);
-        tryListen(currentPort + 1, attempt + 1);
-      } else {
-        console.error(`Failed to start server: ${err.message}`);
-        process.exit(1);
-      }
-    });
+    const tryListen = (currentPort: number, attempt: number): void => {
+      server.once("error", (err: NodeJS.ErrnoException) => {
+        if (err.code === "EADDRINUSE" && attempt < maxRetries) {
+          console.log(`Port ${currentPort} in use, trying ${currentPort + 1}...`);
+          tryListen(currentPort + 1, attempt + 1);
+        } else {
+          console.error(`Failed to start server: ${err.message}`);
+          rejectPromise(err);
+        }
+      });
 
-    server.listen(currentPort, () => {
-      const url = `http://localhost:${currentPort}`;
-      console.log(`memex is running at ${url}`);
-      if (!process.env.MEMEX_NO_OPEN) {
-        const bin = process.platform === "darwin" ? "open"
-          : process.platform === "win32" ? "start"
-          : "xdg-open";
-        execFile(bin, [url], () => {});
-      }
-    });
-  };
+      server.listen(currentPort, () => {
+        const url = `http://localhost:${currentPort}`;
+        console.log(`memex is running at ${url}`);
+        if (!process.env.MEMEX_NO_OPEN) {
+          const bin = process.platform === "darwin" ? "open"
+            : process.platform === "win32" ? "start"
+            : "xdg-open";
+          execFile(bin, [url], () => {});
+        }
+        resolvePromise(server);
+      });
+    };
 
-  tryListen(port, 0);
+    tryListen(port, 0);
+  });
 }
