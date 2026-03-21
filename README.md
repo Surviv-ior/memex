@@ -33,7 +33,7 @@ All platforms share the same `~/.memex/cards/` directory. A card written in Clau
 |----------|---------|
 | **Any editor** | `npx add-mcp @touchskyer/memex -- mcp` |
 | **Claude Code** | `/plugin marketplace add iamtouchskyer/memex` then `/plugin install memex@memex` |
-| **VS Code / Copilot** | [Install from MCP Registry](https://registry.modelcontextprotocol.io) or `code --add-mcp '{"name":"memex","command":"npx","args":["-y","@touchskyer/memex","mcp"]}'` |
+| **VS Code / Copilot** | Search "memex" in [VS Code Extensions](https://marketplace.visualstudio.com/items?itemName=touchskyer.memex-mcp) or [MCP Registry](https://registry.modelcontextprotocol.io) |
 | **Cursor** | [One-click install](cursor://anysphere.cursor-deeplink/mcp/install?name=memex&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsIkB0b3VjaHNreWVyL21lbWV4IiwibWNwIl19) |
 | **Codex** | `codex mcp add memex -- npx -y @touchskyer/memex mcp` |
 | **Windsurf / others** | Add MCP server: command `npx`, args `["-y", "@touchskyer/memex", "mcp"]` |
