@@ -608,11 +608,123 @@ body::-webkit-scrollbar { display: none; }
 .theme-tile:hover { transform: scale(1.06); }
 .theme-tile.active { border-color: var(--blue); }
 
+/* === View toggle === */
+.view-toggle {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+.view-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 0;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--label-3);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.view-btn:hover { background: rgba(0,0,0,0.04); }
+.view-btn.active { background: rgba(0,122,255,0.1); color: var(--blue); }
+[data-theme="midnight"] .view-btn:hover { background: rgba(255,255,255,0.06); }
+[data-theme="midnight"] .view-btn.active { background: rgba(0,122,255,0.15); }
+
+/* === Graph view === */
+.graph-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #0a0a0f;
+  border-radius: 0 0 13px 0;
+}
+.graph-container canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.graph-search-wrap {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+}
+.graph-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 8px;
+  width: 13px;
+  height: 13px;
+  color: rgba(255,255,255,0.15);
+  pointer-events: none;
+}
+.graph-search {
+  width: 100%;
+  padding: 7px 12px 7px 30px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: inherit;
+  color: rgba(255,255,255,0.7);
+  outline: none;
+}
+.graph-search:focus { border-color: rgba(90,200,250,0.3); }
+.graph-search::placeholder { color: rgba(255,255,255,0.15); }
+
+.graph-popover {
+  position: absolute;
+  width: 270px;
+  background: rgba(20,20,28,0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(90,200,250,0.15);
+  border-radius: 12px;
+  padding: 16px;
+  opacity: 0;
+  transform: scale(0.92) translateY(4px);
+  transition: opacity 0.25s, transform 0.3s cubic-bezier(0.34,1.2,0.64,1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(90,200,250,0.05);
+  z-index: 10;
+  display: none;
+  pointer-events: auto;
+}
+.graph-popover.open { display: block; opacity: 1; transform: scale(1) translateY(0); }
+.graph-popover-arrow {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: rgba(20,20,28,0.95);
+  border: 1px solid rgba(90,200,250,0.15);
+  transform: rotate(45deg);
+  z-index: -1;
+}
+.graph-pop-title { font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.9); margin-bottom: 4px; line-height: 1.3; }
+.graph-pop-meta { font-size: 10px; color: rgba(255,255,255,0.25); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.graph-pop-badge { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; padding: 1px 6px; border-radius: 4px; }
+.graph-pop-body { font-size: 12px; line-height: 1.55; color: rgba(255,255,255,0.45); margin-bottom: 12px; max-height: 80px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; }
+.graph-pop-links { border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; display: flex; flex-wrap: wrap; gap: 4px; }
+.graph-pop-chip { font-size: 10px; color: #5ac8fa; background: rgba(90,200,250,0.08); padding: 3px 8px; border-radius: 10px; cursor: pointer; transition: background 0.15s; user-select: none; }
+.graph-pop-chip:hover { background: rgba(90,200,250,0.18); }
+
+.graph-orphan-badge { position: absolute; bottom: 16px; right: 16px; font-size: 11px; color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); padding: 5px 10px; border-radius: 6px; }
+.graph-hint { position: absolute; bottom: 16px; left: 16px; font-size: 10px; color: rgba(255,255,255,0.15); letter-spacing: 0.5px; }
+
 @media (max-width: 700px) {
   .window { margin: 8px; height: calc(100vh - 16px); border-radius: 10px; }
   .sidebar { display: none; }
   .layout { display: block; }
   .main { height: 100%; padding: 16px 12px 80px; }
+  .graph-container { height: 100%; }
 }
 </style>
 </head>
@@ -638,10 +750,37 @@ body::-webkit-scrollbar { display: none; }
       </div>
       <div class="heatmap-wrap" id="heatmap"></div>
       <hr class="sidebar-sep">
+      <div class="view-toggle">
+        <button class="view-btn active" id="viewTimeline" title="Timeline">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/></svg>
+          Timeline
+        </button>
+        <button class="view-btn" id="viewGraph" title="Graph">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="12" cy="18" r="3"/><line x1="8.5" y1="7.5" x2="10.5" y2="16"/><line x1="15.5" y1="7.5" x2="13.5" y2="16"/><line x1="9" y1="6" x2="15" y2="6"/></svg>
+          Graph
+        </button>
+      </div>
+      <hr class="sidebar-sep">
       <div class="cat-title">Categories</div>
       <ul class="cat-list" id="cat-list"></ul>
     </aside>
     <div class="main" id="timeline"></div>
+    <div class="graph-container" id="graphContainer" style="display:none">
+      <canvas id="graphCanvas"></canvas>
+      <div class="graph-search-wrap">
+        <svg class="graph-search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8.5" cy="8.5" r="5.5"/><line x1="13" y1="13" x2="17" y2="17"/></svg>
+        <input type="text" class="graph-search" placeholder="Search nodes..." id="graphSearch">
+      </div>
+      <div class="graph-popover" id="graphPopover">
+        <div class="graph-popover-arrow" id="graphPopArrow"></div>
+        <div class="graph-pop-title" id="graphPopTitle"></div>
+        <div class="graph-pop-meta" id="graphPopMeta"></div>
+        <div class="graph-pop-body" id="graphPopBody"></div>
+        <div class="graph-pop-links" id="graphPopLinks"></div>
+      </div>
+      <div class="graph-orphan-badge" id="graphOrphanBadge"></div>
+      <div class="graph-hint">CLICK TO INSPECT · DRAG TO PAN · SCROLL TO ZOOM</div>
+    </div>
   </div>
 </div>
 
@@ -1017,7 +1156,476 @@ body::-webkit-scrollbar { display: none; }
     renderTimeline();
   });
 
+  // ---- View toggle ----
+  let currentView = 'timeline';
+  const viewTimelineBtn = document.getElementById('viewTimeline');
+  const viewGraphBtn = document.getElementById('viewGraph');
+  const graphContainer = document.getElementById('graphContainer');
+
+  viewTimelineBtn.addEventListener('click', () => switchView('timeline'));
+  viewGraphBtn.addEventListener('click', () => switchView('graph'));
+
+  function switchView(view) {
+    currentView = view;
+    viewTimelineBtn.classList.toggle('active', view === 'timeline');
+    viewGraphBtn.classList.toggle('active', view === 'graph');
+    timeline.style.display = view === 'timeline' ? '' : 'none';
+    graphContainer.style.display = view === 'graph' ? '' : 'none';
+    if (view === 'graph') initGraph();
+  }
+
   init();
+})();
+</script>
+
+<!-- Graph view -->
+<script>
+(function() {
+  const canvas = document.getElementById('graphCanvas');
+  const ctx = canvas.getContext('2d');
+  const popover = document.getElementById('graphPopover');
+  const dpr = window.devicePixelRatio || 1;
+
+  let cam = { x: 0, y: 0, zoom: 1 };
+  let camTarget = { x: 0, y: 0, zoom: 1 };
+  let dragStart = null, camStart = null, isDragging = false, dragNode = null;
+  let gNodes = [], gEdges = [], gAllEdges = [];
+  let selectedId = null, hoverNode = null;
+  let physicsActive = false, settleCounter = 0;
+  let graphSearchQuery = '';
+  let graphInited = false, animRunning = false;
+  let t = 0;
+
+  // Static particles
+  const particles = [];
+  for (let i = 0; i < 40; i++) {
+    particles.push({ x: Math.random(), y: Math.random(), r: Math.random() * 1 + 0.3, a: Math.random() * 0.05 + 0.01 });
+  }
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function W() { return canvas.width / dpr; }
+  function H() { return canvas.height / dpr; }
+  function toScreen(x, y) { return [(x + cam.x) * cam.zoom + W() / 2, (y + cam.y) * cam.zoom + H() / 2]; }
+  function fromScreen(sx, sy) { return [(sx - W() / 2) / cam.zoom - cam.x, (sy - H() / 2) / cam.zoom - cam.y]; }
+
+  function resizeCanvas() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+  }
+
+  function getNeighbors(id) {
+    const s = new Set();
+    gAllEdges.forEach(([a, b]) => { if (a === id) s.add(b); if (b === id) s.add(a); });
+    return [...s];
+  }
+
+  // Build graph from API data
+  window.initGraph = async function() {
+    if (graphInited) { resizeCanvas(); return; }
+
+    const [cardsRes, linksRes] = await Promise.all([fetch('/api/cards'), fetch('/api/links')]);
+    const cards = await cardsRes.json();
+    const linkStats = await linksRes.json();
+
+    // Build edges from card content
+    gAllEdges = [];
+    const slugSet = new Set(cards.map(c => c.slug));
+    cards.forEach(c => {
+      (c.links || []).forEach(l => {
+        if (slugSet.has(l)) gAllEdges.push([c.slug, l]);
+      });
+    });
+
+    // Connected nodes only
+    const connected = new Set();
+    gAllEdges.forEach(([a, b]) => { connected.add(a); connected.add(b); });
+
+    resizeCanvas();
+    const cx = W() * 0.5, cy = H() * 0.45;
+
+    gNodes = [];
+    const connArr = [...connected];
+    connArr.forEach((slug, i) => {
+      const card = cards.find(c => c.slug === slug);
+      const angle = (Math.PI * 2 * i / connArr.length) - Math.PI / 2;
+      const dist = 140 + Math.random() * 80;
+      const ec = gAllEdges.filter(([a, b]) => a === slug || b === slug).length;
+      gNodes.push({
+        id: slug,
+        title: card ? card.title : slug,
+        source: card ? (card.source || '').toLowerCase() : '',
+        created: card ? card.created : '',
+        firstLine: card ? card.firstLine : '',
+        links: card ? (card.links || []) : [],
+        x: cx + Math.cos(angle) * dist,
+        y: cy + Math.sin(angle) * dist,
+        vx: 0, vy: 0,
+        r: Math.min(22, 7 + ec * 2.2),
+        hub: ec >= 4,
+        displayR: Math.min(22, 7 + ec * 2.2),
+        glowAlpha: 0,
+        selectPulse: 0,
+      });
+    });
+
+    // Orphan count
+    const orphanCount = cards.length - connected.size;
+    document.getElementById('graphOrphanBadge').textContent = orphanCount > 0 ? orphanCount + ' orphan cards' : '';
+
+    // Edge anim state
+    gEdges = {};
+    gAllEdges.forEach(([a, b]) => { gEdges[a + '>' + b] = { alpha: 0, dot: 0 }; });
+
+    // Center camera
+    if (gNodes.length > 0) {
+      const ax = gNodes.reduce((s, n) => s + n.x, 0) / gNodes.length;
+      const ay = gNodes.reduce((s, n) => s + n.y, 0) / gNodes.length;
+      cam.x = camTarget.x = -ax;
+      cam.y = camTarget.y = -ay;
+    }
+
+    physicsActive = true;
+    settleCounter = 0;
+    selectedId = null;
+    graphInited = true;
+
+    if (!animRunning) { animRunning = true; drawGraph(); }
+  };
+
+  // Physics
+  function simulate() {
+    if (!physicsActive) return;
+    const cx = W() * 0.5, cy = H() * 0.45;
+    let totalV = 0;
+    gNodes.forEach(n => {
+      if (n === dragNode) return;
+      n.vx += (cx - n.x) * 0.0002;
+      n.vy += (cy - n.y) * 0.0002;
+      gNodes.forEach(m => {
+        if (n === m) return;
+        const dx = n.x - m.x, dy = n.y - m.y;
+        const dist = Math.max(20, Math.sqrt(dx * dx + dy * dy));
+        const f = 6000 / (dist * dist);
+        n.vx += (dx / dist) * f;
+        n.vy += (dy / dist) * f;
+      });
+    });
+    gAllEdges.forEach(([a, b]) => {
+      const na = gNodes.find(n => n.id === a), nb = gNodes.find(n => n.id === b);
+      if (!na || !nb) return;
+      const dx = nb.x - na.x, dy = nb.y - na.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const f = (dist - 130) * 0.001;
+      if (na !== dragNode) { na.vx += (dx / dist) * f; na.vy += (dy / dist) * f; }
+      if (nb !== dragNode) { nb.vx -= (dx / dist) * f; nb.vy -= (dy / dist) * f; }
+    });
+    gNodes.forEach(n => {
+      if (n === dragNode) { n.vx = 0; n.vy = 0; return; }
+      n.vx *= 0.85; n.vy *= 0.85;
+      n.x += n.vx; n.y += n.vy;
+      totalV += Math.abs(n.vx) + Math.abs(n.vy);
+    });
+    if (totalV < 0.5) { settleCounter++; if (settleCounter > 30) physicsActive = false; }
+    else settleCounter = 0;
+  }
+
+  function updateAnimations() {
+    cam.x = lerp(cam.x, camTarget.x, 0.1);
+    cam.y = lerp(cam.y, camTarget.y, 0.1);
+    cam.zoom = lerp(cam.zoom, camTarget.zoom, 0.1);
+    const isNbr = (id) => selectedId && getNeighbors(selectedId).includes(id);
+    gNodes.forEach(n => {
+      const isSel = n.id === selectedId, isN = isNbr(n.id);
+      n.glowAlpha = lerp(n.glowAlpha, isSel ? 1 : isN ? 0.4 : 0, 0.08);
+      n.displayR = lerp(n.displayR, isSel ? n.r * 1.3 : n.r, 0.12);
+      n.selectPulse = isSel ? Math.min(1, n.selectPulse + 0.04) : Math.max(0, n.selectPulse - 0.06);
+    });
+    gAllEdges.forEach(([a, b]) => {
+      const key = a + '>' + b;
+      const st = gEdges[key];
+      if (!st) return;
+      const isSel = a === selectedId || b === selectedId;
+      st.alpha = lerp(st.alpha, isSel ? 1 : 0, 0.08);
+      if (isSel) st.dot = (st.dot + 0.006) % 1;
+    });
+  }
+
+  function drawGraph() {
+    if (!graphInited) return;
+    t++;
+    ctx.save();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const w = W(), h = H();
+    ctx.clearRect(0, 0, w, h);
+
+    simulate();
+    updateAnimations();
+
+    // Static particles
+    particles.forEach(p => {
+      ctx.beginPath(); ctx.arc(p.x * w, p.y * h, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(90,200,250,' + p.a + ')'; ctx.fill();
+    });
+
+    ctx.save();
+    ctx.translate(w / 2, h / 2);
+    ctx.scale(cam.zoom, cam.zoom);
+    ctx.translate(cam.x, cam.y);
+
+    const isNbr = (id) => selectedId && getNeighbors(selectedId).includes(id);
+    const matchesQ = (n) => !graphSearchQuery || n.id.includes(graphSearchQuery) || n.title.toLowerCase().includes(graphSearchQuery);
+
+    // Edges
+    gAllEdges.forEach(([a, b]) => {
+      const na = gNodes.find(n => n.id === a), nb = gNodes.find(n => n.id === b);
+      if (!na || !nb) return;
+      const key = a + '>' + b;
+      const st = gEdges[key] || { alpha: 0, dot: 0 };
+      const isHov = a === hoverNode || b === hoverNode;
+      const base = selectedId ? 0.02 : 0.05;
+      const alpha = lerp(base, 0.4, st.alpha);
+      const hovA = isHov && !selectedId ? 0.2 : 0;
+
+      ctx.beginPath(); ctx.moveTo(na.x, na.y); ctx.lineTo(nb.x, nb.y);
+      ctx.strokeStyle = 'rgba(90,200,250,' + Math.max(alpha, hovA) + ')';
+      ctx.lineWidth = lerp(0.7, 1.8, st.alpha) / cam.zoom;
+      ctx.stroke();
+
+      if (st.alpha > 0.1) {
+        const dx = nb.x - na.x, dy = nb.y - na.y;
+        ctx.beginPath();
+        ctx.arc(na.x + dx * st.dot, na.y + dy * st.dot, 2 / cam.zoom, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(90,200,250,' + (st.alpha * 0.7) + ')';
+        ctx.fill();
+      }
+    });
+
+    // Nodes
+    gNodes.forEach(n => {
+      const isSel = n.id === selectedId, isHov = n.id === hoverNode, isN = isNbr(n.id), isM = matchesQ(n);
+
+      // Glow
+      if (n.glowAlpha > 0.01) {
+        const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.displayR * 3.5);
+        g.addColorStop(0, 'rgba(90,200,250,' + (n.glowAlpha * 0.2) + ')');
+        g.addColorStop(1, 'rgba(90,200,250,0)');
+        ctx.beginPath(); ctx.arc(n.x, n.y, n.displayR * 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = g; ctx.fill();
+      }
+      if (isHov && !isSel && n.glowAlpha < 0.1) {
+        const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r * 3);
+        g.addColorStop(0, 'rgba(90,200,250,0.1)');
+        g.addColorStop(1, 'rgba(90,200,250,0)');
+        ctx.beginPath(); ctx.arc(n.x, n.y, n.r * 3, 0, Math.PI * 2);
+        ctx.fillStyle = g; ctx.fill();
+      }
+
+      let a;
+      if (graphSearchQuery) a = isM ? 0.8 : 0.06;
+      else if (selectedId) a = isSel ? 0.95 : isN ? 0.6 : 0.08;
+      else a = isHov ? 0.8 : 0.45;
+
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.displayR, 0, Math.PI * 2);
+      ctx.fillStyle = n.hub ? 'rgba(52,199,89,' + a + ')' : 'rgba(90,200,250,' + a + ')';
+      ctx.fill();
+
+      if (n.selectPulse > 0.01) {
+        ctx.beginPath(); ctx.arc(n.x, n.y, n.displayR, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(90,200,250,' + (n.selectPulse * 0.7) + ')';
+        ctx.lineWidth = 2 / cam.zoom; ctx.stroke();
+        const wave = (Math.sin(t * 0.06) + 1) * 0.5;
+        ctx.beginPath(); ctx.arc(n.x, n.y, n.displayR + (4 + wave * 8) / cam.zoom, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(90,200,250,' + (n.selectPulse * (0.12 - wave * 0.1)) + ')';
+        ctx.lineWidth = 1 / cam.zoom; ctx.stroke();
+      }
+
+      let la;
+      if (graphSearchQuery) la = isM ? 0.8 : 0.04;
+      else if (selectedId) la = isSel ? 0.95 : isN ? 0.45 : 0.06;
+      else la = isHov ? 0.7 : 0.25;
+
+      ctx.font = (isSel ? 'bold ' : '') + ((isSel ? 12 : 10) / cam.zoom) + 'px -apple-system,sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      ctx.fillStyle = 'rgba(255,255,255,' + la + ')';
+      ctx.fillText(n.id, n.x, n.y + n.displayR + 8 / cam.zoom);
+    });
+
+    ctx.restore(); ctx.restore();
+    requestAnimationFrame(drawGraph);
+  }
+
+  // Hit test
+  function hitTest(sx, sy) {
+    const [wx, wy] = fromScreen(sx, sy);
+    for (let i = gNodes.length - 1; i >= 0; i--) {
+      const n = gNodes[i], dx = wx - n.x, dy = wy - n.y;
+      if (dx * dx + dy * dy < (n.r + 6) * (n.r + 6)) return n;
+    }
+    return null;
+  }
+
+  function getCanvasXY(e) {
+    const rect = canvas.getBoundingClientRect();
+    return [e.clientX - rect.left, e.clientY - rect.top];
+  }
+
+  // Popover
+  function showPopover(node) {
+    const [sx, sy] = toScreen(node.x, node.y);
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const screenX = sx + rect.left;
+    const screenY = sy + rect.top;
+
+    document.getElementById('graphPopTitle').textContent = node.title;
+    const bc = node.source === 'retro' ? '#5ac8fa' : node.source === 'organize' ? '#bf5af2' : 'rgba(255,255,255,0.4)';
+    const bg = node.source === 'retro' ? 'rgba(90,200,250,0.12)' : node.source === 'organize' ? 'rgba(175,82,222,0.12)' : 'rgba(255,255,255,0.05)';
+    document.getElementById('graphPopMeta').innerHTML =
+      '<span class="graph-pop-badge" style="background:' + bg + ';color:' + bc + '">' + node.source + '</span>' +
+      '<span>' + node.created + '</span>';
+    document.getElementById('graphPopBody').textContent = node.firstLine || node.title;
+
+    const nbrs = getNeighbors(node.id);
+    document.getElementById('graphPopLinks').innerHTML = nbrs.map(nid =>
+      '<span class="graph-pop-chip" data-nav="' + nid + '">[[' + nid + ']]</span>'
+    ).join('');
+
+    const pop = popover;
+    pop.style.visibility = 'hidden';
+    pop.classList.add('open');
+
+    requestAnimationFrame(() => {
+      const popW = 270, popH = pop.offsetHeight || 180;
+      let left = sx - popW / 2;
+      let top = sy - node.displayR * cam.zoom - popH - 14;
+      const arrow = document.getElementById('graphPopArrow');
+      let above = true;
+
+      if (top < 10) { top = sy + node.displayR * cam.zoom + 14; above = false; }
+      left = Math.max(8, Math.min(canvas.parentElement.offsetWidth - popW - 8, left));
+
+      pop.style.left = left + 'px';
+      pop.style.top = top + 'px';
+      pop.style.visibility = 'visible';
+
+      const al = Math.max(16, Math.min(popW - 26, sx - left));
+      arrow.style.left = al + 'px';
+      if (above) {
+        arrow.style.bottom = '-6px'; arrow.style.top = 'auto';
+        arrow.style.borderTop = 'none'; arrow.style.borderLeft = 'none';
+        arrow.style.borderRight = '1px solid rgba(90,200,250,0.15)';
+        arrow.style.borderBottom = '1px solid rgba(90,200,250,0.15)';
+      } else {
+        arrow.style.top = '-6px'; arrow.style.bottom = 'auto';
+        arrow.style.borderBottom = 'none'; arrow.style.borderRight = 'none';
+        arrow.style.borderTop = '1px solid rgba(90,200,250,0.15)';
+        arrow.style.borderLeft = '1px solid rgba(90,200,250,0.15)';
+      }
+    });
+
+    // Chip navigation
+    pop.querySelectorAll('.graph-pop-chip').forEach(chip => {
+      chip.onclick = (e) => {
+        e.stopPropagation();
+        const tid = chip.dataset.nav;
+        const target = gNodes.find(n => n.id === tid);
+        if (target) {
+          hidePopover();
+          selectedId = tid;
+          camTarget.x = -target.x;
+          camTarget.y = -target.y;
+          setTimeout(() => showPopover(target), 350);
+        }
+      };
+    });
+  }
+
+  function hidePopover() { popover.classList.remove('open'); }
+
+  function repositionPopover() {
+    if (!selectedId || !popover.classList.contains('open')) return;
+    const node = gNodes.find(n => n.id === selectedId);
+    if (!node) return;
+    const [sx, sy] = toScreen(node.x, node.y);
+    const popW = 270, popH = popover.offsetHeight || 180;
+    let left = sx - popW / 2, top = sy - node.displayR * cam.zoom - popH - 14;
+    if (top < 10) top = sy + node.displayR * cam.zoom + 14;
+    left = Math.max(8, Math.min(canvas.parentElement.offsetWidth - popW - 8, left));
+    popover.style.left = left + 'px';
+    popover.style.top = top + 'px';
+  }
+
+  setInterval(repositionPopover, 16);
+
+  // Events
+  canvas.addEventListener('mousedown', (e) => {
+    const [mx, my] = getCanvasXY(e);
+    const hit = hitTest(mx, my);
+    if (hit) { dragNode = hit; isDragging = false; }
+    else { dragStart = [e.clientX, e.clientY]; camStart = [camTarget.x, camTarget.y]; isDragging = false; }
+    canvas.style.cursor = 'grabbing';
+  });
+
+  canvas.addEventListener('mousemove', (e) => {
+    const [mx, my] = getCanvasXY(e);
+    if (dragNode) {
+      isDragging = true;
+      const [wx, wy] = fromScreen(mx, my);
+      dragNode.x = wx; dragNode.y = wy;
+      repositionPopover();
+      return;
+    }
+    if (dragStart) {
+      isDragging = true;
+      camTarget.x = camStart[0] + (e.clientX - dragStart[0]) / cam.zoom;
+      camTarget.y = camStart[1] + (e.clientY - dragStart[1]) / cam.zoom;
+      cam.x = camTarget.x; cam.y = camTarget.y;
+      return;
+    }
+    const hit = hitTest(mx, my);
+    hoverNode = hit ? hit.id : null;
+    canvas.style.cursor = hit ? 'pointer' : 'grab';
+  });
+
+  window.addEventListener('mouseup', (e) => {
+    if (dragNode) { physicsActive = true; settleCounter = 0; dragNode = null; }
+    dragStart = null;
+    const wasDragging = isDragging;
+    setTimeout(() => isDragging = false, 50);
+
+    if (!wasDragging && canvas.parentElement.style.display !== 'none') {
+      const [mx, my] = getCanvasXY(e);
+      const hit = hitTest(mx, my);
+      if (!hit) { selectedId = null; hidePopover(); return; }
+      if (selectedId === hit.id) return;
+      hidePopover();
+      selectedId = hit.id;
+      camTarget.x = -hit.x;
+      camTarget.y = -hit.y;
+      setTimeout(() => showPopover(hit), 300);
+    }
+  });
+
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    camTarget.zoom = Math.max(0.3, Math.min(3, camTarget.zoom * (e.deltaY > 0 ? 0.92 : 1.08)));
+  }, { passive: false });
+
+  // Graph search
+  document.getElementById('graphSearch').addEventListener('input', (e) => {
+    graphSearchQuery = e.target.value.toLowerCase().trim();
+    if (!graphSearchQuery) return;
+    const m = gNodes.find(n => n.id.includes(graphSearchQuery) || n.title.toLowerCase().includes(graphSearchQuery));
+    if (m) {
+      camTarget.x = -m.x; camTarget.y = -m.y;
+      selectedId = m.id;
+      setTimeout(() => showPopover(m), 400);
+    }
+  });
+
+  window.addEventListener('resize', () => { if (graphInited) resizeCanvas(); });
 })();
 </script>
 </body>
