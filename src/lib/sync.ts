@@ -178,26 +178,26 @@ export class GitAdapter implements SyncAdapter {
       // Nothing to commit — that's fine
     }
 
-    // Pull rebase
+    // Pull merge (merge is better than rebase for markdown — auto-merges different paragraphs)
     try {
       await execFile("git", [
         "-C",
         this.home,
         "pull",
-        "--rebase",
+        "--no-rebase",
         "origin",
         "HEAD",
       ]);
     } catch {
-      // Rebase conflict — abort and report
+      // Merge conflict — abort and report
       try {
-        await execFile("git", ["-C", this.home, "rebase", "--abort"]);
+        await execFile("git", ["-C", this.home, "merge", "--abort"]);
       } catch {
         /* ignore */
       }
       return {
         success: false,
-        message: "Rebase conflict. Resolve manually in " + this.home,
+        message: "Merge conflict. Resolve manually in " + this.home,
       };
     }
 
