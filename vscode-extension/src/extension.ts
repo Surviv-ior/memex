@@ -9,7 +9,7 @@ export function activate(context: vscode.ExtensionContext) {
           "npx",
           ["-y", "@touchskyer/memex", "mcp"],
           {},
-          "0.1.5"
+          "0.1.8"
         ),
       ],
       resolveMcpServerDefinition: async (server) => server,
